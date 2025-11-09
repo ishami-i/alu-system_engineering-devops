@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Script to install and configure Nginx server
+# Script to install and configure Nginx to serve a custom index page with "Holberton School"
 
 set -e
 
@@ -10,8 +10,9 @@ sudo apt-get install -y nginx
 # Ensure nginx is running
 sudo service nginx start
 
-# Replace the default Nginx index page content
+# Overwrite BOTH the default index.html and index.nginx-debian.html
+echo "Holberton School" | sudo tee /var/www/html/index.html > /dev/null
 echo "Holberton School" | sudo tee /var/www/html/index.nginx-debian.html > /dev/null
 
-# Restart nginx
+# Restart nginx to ensure configuration is loaded
 sudo service nginx restart

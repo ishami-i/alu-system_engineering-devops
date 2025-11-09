@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # Script to install and configure Nginx server
 
-# Update package list
-apt-get update -y
+set -e
 
-# Install nginx
-apt-get install nginx -y
+# Update package list and install nginx
+sudo apt-get update -y
+sudo apt-get install -y nginx
 
-# Make sure nginx is running
-service nginx start
+# Ensure nginx is running
+sudo service nginx start
 
-# Replace the default Nginx page content
-echo "Holberton School" > /var/www/html/index.nginx-debian.html
+# Replace the default Nginx index page content
+echo "Holberton School" | sudo tee /var/www/html/index.nginx-debian.html > /dev/null
 
-# Restart nginx using service (not systemctl)
-service nginx restart
+# Restart nginx
+sudo service nginx restart

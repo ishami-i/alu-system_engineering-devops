@@ -1,32 +1,28 @@
 #!/usr/bin/env bash
-# Configures a new Ubuntu machine by installing Nginx and setting it up to serve a page with "Holberton School"
+# Installs and configures Nginx to serve a page containing 'Holberton School' on port 80
 
-# Update and install Nginx
-sudo apt-get update -y
-sudo apt-get install nginx -y
+# Exit immediately if a command exits with a non-zero status
+set -e
 
-# Backup default index file (optional but recommended for safety)
-sudo cp /var/www/html/index.nginx-debian.html /var/www/html/index.nginx-debian.html.bckp
+# Update package lists and install Nginx
+apt-get update -y
+apt-get install nginx -y
 
-# Create a new index file with the required content
-echo "Holberton School" | sudo tee /var/www/html/index.html > /dev/null
+# Ensure Nginx is running (without using systemctl)
+service nginx start || /etc/init.d/nginx start
 
-# Restart Nginx without using systemctl
-sudo service nginx restart
+# Replace default index page with required content
+echo "Holberton School" > /var/www/html/index.html
 
-# Configure firewall to allow Nginx and OpenSSH
-sudo ufw enable
-sudo ufw allow 'Nginx HTTP'
-sudo ufw allow 'OpenSSH'
-
-# Verify the configuration
-curl_output=$(curl -s localhost)
-if [[ "$curl_output" == "Holberton School" ]]; then
-  echo "Nginx is installed on your web01 server and accepting traffic on port 80."
-  echo "Nginx returns at its root / a page that contains Holberton School."
-else
-  echo "Nginx configuration verification failed. Output does not contain 'Holberton School'."
-  exit 1
+# Ensure port 80 is open in UFW if enabled
+if command -v ufw >/dev/null 2>&1; then
+  ufw allow 'Nginx HTTP' >/dev/null 2>&1 || true
 fi
 
-echo "Completed. Nginx is installed and configured to serve 'Holberton School'."
+# Test that Nginx returns the expected content
+if curl -s localhost | grep -q "Holberton School"; then
+  echo "Nginx is installed on your web01 server and accepting traffic on port 80"
+else
+  echo "Nginx failed to serve the expected content" >&2
+  exit 1
+fi

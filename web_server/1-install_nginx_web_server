@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Script to install Nginx, start the server, and configure the root page to say 'Holberton School'
+# Installs Nginx, starts the service, and sets up a page saying 'Holberton School'
 
 set -e
 
-# Update and install Nginx
-sudo apt-get update -y
-sudo apt-get install -y nginx
+# Update and install nginx
+apt-get update -y
+apt-get install -y nginx
 
-# Ensure Nginx is started
-sudo service nginx start
+# Start nginx
+service nginx start
 
-# Replace the default index files with the required content
-echo "Holberton School" | sudo tee /var/www/html/index.html > /dev/null
-echo "Holberton School" | sudo tee /var/www/html/index.nginx-debian.html > /dev/null
+# Set up the default web page
+echo "Holberton School" > /var/www/html/index.html
+echo "Holberton School" > /var/www/html/index.nginx-debian.html
 
-# Restart Nginx using service (systemctl is NOT allowed)
-sudo service nginx restart
+# Restart nginx to apply changes
+service nginx restart

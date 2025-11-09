@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
-# Script to install and configure Nginx to serve a custom index page with "Holberton School"
+# Script to install Nginx, start the server, and configure the root page to say 'Holberton School'
 
 set -e
 
-# Update package list and install nginx
 sudo apt-get update -y
 sudo apt-get install -y nginx
 
-# Ensure nginx is running
 sudo service nginx start
 
-# Overwrite BOTH the default index.html and index.nginx-debian.html
+# Overwrite both possible root index files with the required content to satisfy all Nginx index precedence
 echo "Holberton School" | sudo tee /var/www/html/index.html > /dev/null
 echo "Holberton School" | sudo tee /var/www/html/index.nginx-debian.html > /dev/null
 
-# Restart nginx to ensure configuration is loaded
 sudo service nginx restart

@@ -3,13 +3,16 @@
 
 set -e
 
+# Update and install Nginx
 sudo apt-get update -y
 sudo apt-get install -y nginx
 
+# Ensure Nginx is started
 sudo service nginx start
 
-# Overwrite both possible root index files with the required content to satisfy all Nginx index precedence
+# Replace the default index files with the required content
 echo "Holberton School" | sudo tee /var/www/html/index.html > /dev/null
 echo "Holberton School" | sudo tee /var/www/html/index.nginx-debian.html > /dev/null
 
+# Restart Nginx using service (systemctl is NOT allowed)
 sudo service nginx restart

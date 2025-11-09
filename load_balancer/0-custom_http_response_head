@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Installs Nginx with the following configurations:
+#+    Listens on port 80.
+#+    Returns a page containing "Holberton School" when queried
+#+     at the root with a curl GET request.
+# Configures /redirect_me as a "301 Moved Permanently".
+# Includes a custom 404 page containing "Ceci n'est pas une page".
+# Adds X-Served-By header with hostname
+
+sudo apt-get update 
+sudo apt-get install -y nginx 
+
+# Create index page
+echo "Holberton School" | sudo tee /var/www/html/index.html
+
+# Create custom 404 page
+echo "Ceci n'est pas une page" | sudo tee /var/www/html/404.html
+
+# Backup original config
+sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
+
+# Write new configuration
+sudo bash -c 'cat > /etc/nginx/sites-available/default <<EOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+    
+    server_name _;
+    
+    add_header X-Served-By \$hostname;
+    
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+    
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+    
+    error_page 404 /404.html;
+    location = /404.html {
+        internal;
+    }
+}
+EOF'
+
+# Test and restart
+sudo nginx -t
+sudo service nginx restart

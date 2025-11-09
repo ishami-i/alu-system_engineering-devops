@@ -1,39 +1,53 @@
 #!/usr/bin/env bash
-# Configures a new ubuntu machine by installing
-# Nginx where it should be listening on port 80
-# Serve a page that would return a Hello World string
+# Configures a new Ubuntu machine with Nginx to serve a custom 404 page containing "Ceci n'est pas une page"
 
+set -e
 
-echo -e "Updating and installing Nginx.\n"
-sudo apt-get update -y -qq && \
-	 sudo apt-get install nginx -y
+# Update and install Nginx
+apt-get update -y -qq
+apt-get install nginx -y
 
-echo -e "\nSetting up some minor stuff.\n"
+# Start Nginx without systemctl
+service nginx start || /etc/init.d/nginx start
 
-# starting nginx service
-sudo service nginx start
+# Allow HTTP through UFW if available
+if command -v ufw >/dev/null 2>&1; then
+    ufw allow 'Nginx HTTP' >/dev/null 2>&1 || true
+fi
 
-# allowing nginx on firewall
-sudo ufw allow 'Nginx HTTP'
+# Overwrite default index page
+echo "Holberton School" > /var/www/html/index.html
 
-# Give the user ownership to website files for easy editing
-sudo chown -R "$USER":"$USER" /var/www/html
-sudo chmod -R 755 /var/www
+# Create custom 404 page
+echo "Ceci n'est pas une page" > /var/www/html/error_404.html
 
-# Backup default index
-cp /var/www/html/index.nginx-debian.html /var/www/html/index.nginx-debian.html.bckp
+# Configure Nginx to use the custom 404 page
+cat <<EOF > /etc/nginx/sites-available/default
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
 
-# Creating new index
-echo -e "Holberton School" > /var/www/html/index.nginx-debian.html
+    root /var/www/html;
+    index index.html;
 
-# Setting up /redirect_me to a youtube video
-sudo sed -i '24i\	rewrite ^/redirect_me https://www.youtube.com/watch?v=dQw4w9WgXcQ permanent;' /etc/nginx/sites-available/default
+    server_name _;
 
-# Set up a 404 page
-echo "Ceci n'est pas une page" >> /var/www/html/error_404.html
-sudo sed -i '25i\	error_page 404 /error_404.html;' /etc/nginx/sites-available/default
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
 
-# Restarting nginx
-sudo service nginx restart
+    error_page 404 /error_404.html;
+}
+EOF
 
-echo -e "\nCompleted.\n"
+# Restart Nginx
+service nginx restart || /etc/init.d/nginx restart
+
+# Verification
+if curl -sI localhost/doesnotexist | grep -q "404 Not Found" && \
+   curl -s localhost/doesnotexist | grep -q "Ceci n'est pas une page"; then
+    echo "Custom 404 page configured successfully."
+else
+    echo "Failed to configure 404 page." >&2
+    exit 1
+fi

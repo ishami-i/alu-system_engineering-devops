@@ -1,28 +1,10 @@
 #!/usr/bin/env bash
-# Installs and configures Nginx to serve a page containing 'Holberton School' on port 80
+# SetUp Process for Nginx on a server
 
-# Exit immediately if a command exits with a non-zero status
-set -e
-
-# Update package lists and install Nginx
-apt-get update -y
-apt-get install nginx -y
-
-# Ensure Nginx is running (without using systemctl)
-service nginx start || /etc/init.d/nginx start
-
-# Replace default index page with required content
+apt-get -y update
+apt-get -y install nginx
+ufw enable
+ufw allow 'Nginx HTTP'
+ufw allow 'OpenSSH'
 echo "Holberton School" > /var/www/html/index.html
-
-# Ensure port 80 is open in UFW if enabled
-if command -v ufw >/dev/null 2>&1; then
-  ufw allow 'Nginx HTTP' >/dev/null 2>&1 || true
-fi
-
-# Test that Nginx returns the expected content
-if curl -s localhost | grep -q "Holberton School"; then
-  echo "Nginx is installed on your web01 server and accepting traffic on port 80"
-else
-  echo "Nginx failed to serve the expected content" >&2
-  exit 1
-fi
+service nginx restart
